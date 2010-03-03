@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:schema="https://upay.ucdavis.edu/upay/allocfeed" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="https://upay.ucdavis.edu/upay/allocfeed" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <schema xmlns:tn="https://upay.ucdavis.edu/upay/allocfeed" elementFormDefault="qualified" targetNamespace="https://upay.ucdavis.edu/upay/allocfeed" xmlns="http://www.w3.org/2001/XMLSchema">
+      <element name="allocRequest">
+        <annotation>
+          <documentation>
+				This element forms the body of the request.  It can contain one or more transaction elements.  
+				Each of those can contain one or more allocation elements.
+			</documentation>
+        </annotation>
+        <complexType>
+          <sequence>
+            <element minOccurs="1" maxOccurs="unbounded" name="transaction">
+              <annotation>
+                <documentation>
+							Add a transaction entry for each credit card charge that you want to allocate.  
+							
+							You must specify your merchant ID (as known to the payment gateway) and transaction ID (returned by the Marketplace server via a post-back.)
+						</documentation>
+              </annotation>
+              <complexType>
+                <sequence>
+                  <element minOccurs="1" maxOccurs="unbounded" name="allocation">
+                    <annotation>
+                      <documentation>
+										Add a line for each fund source to which you want to allocate.  Allocations are processed in the order listed.
+										Each line requires an fid, chart, account, and EITHER a percent OR an amount.
+										Regardless of the amount or percent on the last line, it will get the remainder of the funds not allocated by earlier lines.  If an expense is fully allocated before all lines are used, those lines will not be used.
+										
+										The web service process is fairly simple.  It DOES NOT validate the charts/accounts given.  This validation is done during the nightly batch.  If an FID, chart, or account fails to validate at that time, it will be ignored and the credit be placed in the default account associated with your FID.
+									</documentation>
+                    </annotation>
+                    <complexType>
+                      <attribute name="fid" use="required">
+                        <annotation>
+                          <documentation>
+												3-character FID code identifying your merchant activity.  These are assigned by Internal Control.
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="string">
+                            <length value="3" />
+                            <whiteSpace value="collapse" />
+                            <pattern value="[A-Z0-9\-]{3}" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="chart">
+                        <annotation>
+                          <documentation>
+												1-character chart code of the account to which you want to allocate the credit transaction.
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="string">
+                            <minLength value="1" />
+                            <maxLength value="2" />
+                            <pattern value="[A-Z0-9]{1,2}" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="account">
+                        <annotation>
+                          <documentation>
+												7-character account number to which you want to allocate the credit transaction.
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="string">
+                            <pattern value="[A-Z0-9]{7}" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="subAccount" use="optional">
+                        <simpleType>
+                          <restriction base="string">
+                            <minLength value="1" />
+                            <maxLength value="5" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="project" use="optional">
+                        <simpleType>
+                          <restriction base="string">
+                            <minLength value="1" />
+                            <maxLength value="10" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="amount">
+                        <annotation>
+                          <documentation>
+												The maximum amount you want credited to the account on this line.  
+												
+												This allocation will be credited with the lesser of the amount entered and the
+												amount remaining to allocate (taking into consideration earlier allocation lines.)
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="double">
+                            <minExclusive value="0" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="percent">
+                        <annotation>
+                          <documentation>
+												The maximum percentage of the total transaction amount you want credited to the account on this line.  
+												
+												This allocation will be credited with the lesser of the percent entered and the
+												amount remaining to allocate (taking into consideration earlier allocation lines.)
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="double">
+                            <minExclusive value="0" />
+                            <maxInclusive value="100" />
+                            <whiteSpace value="collapse" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                      <attribute name="giftNotificationId">
+                        <annotation>
+                          <documentation>
+												Used by gift transactions to direct the generated gift document to
+												a particular person.  If this value is not passed (or is not valid)
+												then the gift document will be generated to the inbox of the person set
+												up as the default on the server.
+												
+												This value should be the UCD Login ID of the desired recipient in upper case.
+											</documentation>
+                        </annotation>
+                        <simpleType>
+                          <restriction base="string">
+                            <minLength value="1" />
+                            <maxLength value="8" />
+                            <whiteSpace value="collapse" />
+                            <pattern value="([A-Z0-9]){2,8}" />
+                          </restriction>
+                        </simpleType>
+                      </attribute>
+                    </complexType>
+                  </element>
+                </sequence>
+                <attribute name="merchantId" use="required">
+                  <annotation>
+                    <documentation>
+								  This is the merchant ID as known to the TouchNet payment gateway.  You must obtain this 
+								  number from Internal Control.  It is an integer between 0 and 255.  It is NOT your
+								  UPAY_SITE_ID or any other number that is used during the process.  (Sorry, this is due to
+								  the data available to the nightly process.)
+								</documentation>
+                  </annotation>
+                  <simpleType>
+                    <restriction base="int">
+                      <minInclusive value="0" />
+                      <maxInclusive value="255" />
+                      <whiteSpace value="collapse" />
+                    </restriction>
+                  </simpleType>
+                </attribute>
+                <attribute name="transactionId" use="required">
+                  <annotation>
+                    <documentation>
+									This is the unique transaction ID assigned to a transaction within your merchant ID.  
+									This value is returned to your server via the post-back in the TPG_TRANS_ID variable.
+								</documentation>
+                  </annotation>
+                  <simpleType>
+                    <restriction base="string">
+                      <whiteSpace value="collapse" />
+                      <length value="14" />
+                      <pattern value="\d{14}" />
+                    </restriction>
+                  </simpleType>
+                </attribute>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="allocResponse" type="string">
+        <annotation>
+          <documentation>
+				This is the response element.  It will contain a string representing the results of the allocation request.
+				This will be the string "OK" if the process succeeded.  Otherwise, it will contain a list of error messages.
+				Allocation records are *only* applied if all lines validate properly.
+			</documentation>
+        </annotation>
+      </element>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="allocRequest">
+    <wsdl:part name="allocRequest" element="schema:allocRequest" />
+  </wsdl:message>
+  <wsdl:message name="allocResponse">
+    <wsdl:part name="allocResponse" element="schema:allocResponse" />
+  </wsdl:message>
+  <wsdl:portType name="Alloc">
+    <wsdl:operation name="alloc">
+      <wsdl:input name="allocRequest" message="schema:allocRequest" />
+      <wsdl:output name="allocResponse" message="schema:allocResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AllocBinding" type="schema:Alloc">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="alloc">
+      <soap:operation soapAction="" />
+      <wsdl:input name="allocRequest">
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output name="allocResponse">
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AllocService">
+    <wsdl:port name="AllocPort" binding="schema:AllocBinding">
+      <soap:address location="https://upay-test.ucdavis.edu:443/upay/services/" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
