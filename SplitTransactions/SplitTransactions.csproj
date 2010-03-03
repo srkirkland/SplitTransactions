@@ -71,7 +71,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\TransactionService.cs" />
+    <Compile Include="Models\ITransactionAllocationService.cs" />
+    <Compile Include="Models\TransactionAllocationManager.cs" />
+    <Compile Include="Models\TransactionAllocationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service References\UpaySplitService\Reference.cs">
       <AutoGen>True</AutoGen>
