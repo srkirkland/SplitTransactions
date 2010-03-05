@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using SplitTransactions.UpaySplitService;
 
 namespace SplitTransactions.Services
@@ -102,6 +103,8 @@ namespace SplitTransactions.Services
         /// <returns>Result string -- use the service's AllocateResultSuccess method to determine pass/fail</returns>
         public string Allocate(ITransactionAllocationService allocationService)
         {
+            if (Allocations.Count == 0) return "There are no allocations yet created for this transaction -- call AddAllocation() first";
+
             return allocationService.Allocate(new[] { Transaction });
         }
     }
