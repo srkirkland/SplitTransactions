@@ -1,8 +1,8 @@
 using SplitTransactions.UpaySplitService;
 
-namespace SplitTransactions.Models
+namespace SplitTransactions.Services
 {
-    public interface ITransactionAllocationService
+    public class TransactionAllocationService : ITransactionAllocationService
     {
         /// <summary>
         /// Allocation service from UPay
@@ -16,7 +16,17 @@ namespace SplitTransactions.Models
         /// This will be the string "OK" if the process succeeded.  Otherwise, it will contain a list of error messages.
         /// Allocation records are *only* applied if all lines validate properly.
         /// </returns>
-        string Allocate(allocRequestTransaction[] requestTransactions);
+        public string Allocate(allocRequestTransaction[] requestTransactions)
+        {
+            string result;
+            
+            using (var client = new AllocClient())
+            {
+                result = client.alloc(requestTransactions);
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Determines if the allocate result string represents a success or failure
@@ -27,6 +37,9 @@ namespace SplitTransactions.Models
         /// <returns>
         /// true if the result equals the success string
         /// </returns>
-        bool AllocateResultSuccess(string allocateResult);
+        public bool AllocateResultSuccess(string allocateResult)
+        {
+            return allocateResult == "OK";
+        }
     }
 }

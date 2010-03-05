@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using SplitTransactions.UpaySplitService;
 
-namespace SplitTransactions.Models
+namespace SplitTransactions.Services
 {
-    public class TransactionAllocationManager
+    public class TransactionAllocationManager : ITransactionAllocationManager
     {
         protected List<allocRequestTransactionAllocation> Allocations { get; set; }
         protected allocRequestTransaction Transaction { get; set; }
@@ -85,10 +85,24 @@ namespace SplitTransactions.Models
             Allocations.Add(allocation);
         }
 
-        public enum AllocationType
+        /// <summary>
+        /// Get an copy of the allocations to view
+        /// </summary>
+        public IEnumerable<allocRequestTransactionAllocation> GetAllocations()
         {
-            Amount,
-            Percent
+            var allocations = new List<allocRequestTransactionAllocation>(Allocations);
+
+            return allocations;
+        }
+
+        /// <summary>
+        /// Allocate the transaction using the given service.
+        /// </summary>
+        /// <param name="allocationService">Service which can allocate transactions</param>
+        /// <returns>Result string -- use the service's AllocateResultSuccess method to determine pass/fail</returns>
+        public string Allocate(ITransactionAllocationService allocationService)
+        {
+            return allocationService.Allocate(new[] { Transaction });
         }
     }
 }
