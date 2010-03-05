@@ -1,3 +1,4 @@
+using System;
 using SplitTransactions.UpaySplitService;
 
 namespace SplitTransactions.Services
@@ -22,7 +23,14 @@ namespace SplitTransactions.Services
             
             using (var client = new AllocClient())
             {
-                result = client.alloc(requestTransactions);
+                try
+                {
+                    result = client.alloc(requestTransactions);
+                }
+                catch (Exception exception)
+                {
+                    return exception.Message;
+                }
             }
 
             return result;

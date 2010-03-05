@@ -27,7 +27,7 @@ namespace SplitTransactions.Controllers
             _allocationManager.AddAllocation("ABC", "L", "AARGAAD", string.Empty, string.Empty, string.Empty, 25, AllocationType.Amount);
             _allocationManager.AddAllocation("ABC", "3", "ABBABBA", string.Empty, string.Empty, string.Empty, 75, AllocationType.Amount);
 
-            //ViewData["result"] = _allocationManager.Allocate(_allocationService);
+            ViewData["result"] = _allocationManager.Allocate(_allocationService);
             
             return View(_allocationManager.GetAllocations());
         }

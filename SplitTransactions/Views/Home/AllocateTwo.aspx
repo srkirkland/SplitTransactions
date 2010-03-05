@@ -82,7 +82,7 @@
     </table>
 
     <p>
-        Result: <%= ViewData["result"] %>
+        Result: <%= Html.Encode(ViewData["result"]) %>
     </p>
 
     <p>
